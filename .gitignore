@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Bases de datos y respaldos (cada usuario genera la suya con la migración)
+app/data/*.db
+app/data/*.db-journal
+*.bak-*.db
+
+# HTML y recursos descargados de Zajuna
+*Zajuna.html
+*Zajuna_files/
+*.html
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
