@@ -66,7 +66,6 @@ Luego abre 👉 **http://127.0.0.1:8001/docs** (Swagger) o **http://127.0.0.1:80
 | 📥 [**Migración de datos**](docs/migracion-datos.md) | Guardar el HTML de Zajuna e importarlo a la base |
 | ⚙️ [**Configuración**](docs/configuracion.md) | Ruta de la base, puerto, variables de entorno |
 | 🧭 [**Guía de uso**](docs/guia-api.md) | Todos los endpoints con **Postman** y **consola** |
-| 🐙 [**Publicar en GitHub**](docs/publicar-github.md) | Subir el proyecto y compartirlo con tus compañeros |
 
 ---
 
