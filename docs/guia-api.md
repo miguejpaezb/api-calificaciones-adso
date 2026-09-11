@@ -253,6 +253,78 @@ Invoke-RestMethod -Method Post http://127.0.0.1:8001/api/actividades/45/eliminar
 
 ---
 
+## 📦 Marcar en lote por código (recomendado)
+
+Marca varias actividades de una sola vez pasando sus **códigos completos** (formato `GA5-220501095-AA1-EV04`). Solo permite `Subido` o `Eliminada`; las calificadas van una por una porque llevan nota y retroalimentación.
+
+### Endpoint `POST /api/actividades/lote`
+
+| Campo | Tipo | Descripción |
+|:---|:---|:---|
+| `codigos` | lista de texto | Códigos completos de las actividades. |
+| `estado` | `"Subido"` o `"Eliminada"` | Estado a aplicar. |
+| `backup` | booleano (opcional) | Crea respaldo antes de escribir (por defecto `true`). |
+
+**Consola:**
+
+```powershell
+$body = @{
+  codigos = @("GA5-220501095-AA1-EV04", "GA5-220501095-AA1-EV05")
+  estado  = "Subido"
+  backup  = $true
+} | ConvertTo-Json
+Invoke-RestMethod -Method Post http://127.0.0.1:8001/api/actividades/lote `
+  -ContentType "application/json" -Body $body
+```
+
+**Postman:** método **POST**, URL `http://127.0.0.1:8001/api/actividades/lote`, pestaña **Body → raw → JSON**:
+
+```json
+{
+  "codigos": ["GA5-220501095-AA1-EV04", "GA5-220501095-AA1-EV05"],
+  "estado": "Subido",
+  "backup": true
+}
+```
+
+**Resultado esperado:**
+
+```json
+{
+  "estado": "Subido",
+  "actualizadas": 2,
+  "detalle": [
+    {"codigo": "GA5-220501095-AA1-EV04", "id": 51, "actividad": "Evidencia Maquetación..."},
+    {"codigo": "GA5-220501095-AA1-EV05", "id": 52, "actividad": "Evidencia Mapa de Navegación..."}
+  ],
+  "no_encontradas": [],
+  "ambiguas": [],
+  "backup": "app\\data\\calificaciones.bak-20260910-120000.db"
+}
+```
+
+### Reglas del lote
+
+- ✅ Solo se aceptan **códigos completos** (`GA#-...-AA#-EV#`).
+- ❌ Si algún código no tiene ese formato, responde **422**, **no modifica nada** y pide revisarlo o hacerlo **de forma manual**:
+
+  ```json
+  {"detail": "Revisa estos códigos, no tienen el formato completo (ej. GA5-220501095-AA1-EV04): ['GA5-AA1']. Corrígelos o márcalos de forma manual con POST /api/actividades/{id}/subir o /eliminar."}
+  ```
+
+- 🔎 Los códigos válidos que no existan aparecen en `no_encontradas` (revísalos o hazlos manual).
+- ⚠️ Si un código coincide con más de una actividad aparece en `ambiguas` y **no se toca**.
+- 🧾 Las actividades sin código completo (por ejemplo las de la primera fase con `AA1-EV01`) se marcan **una por una** con los endpoints individuales.
+
+### Alternativa por consola (sin levantar el servidor)
+
+```powershell
+python marcar_lote.py subido --codigos "GA5-220501095-AA1-EV04,GA5-220501095-AA1-EV05"
+python marcar_lote.py eliminada --archivo codigos.txt
+```
+
+---
+
 ## 🗑️ Marcar un rango como eliminada
 
 Para marcar de una sola vez las actividades con `id` entre **x** e **y**.

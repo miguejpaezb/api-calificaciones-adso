@@ -143,6 +143,33 @@ python eliminar_rango.py 10 25
 
 ---
 
+## 8. Marcar subidas/eliminadas en lote por código
+
+El reporte de Zajuna **no indica** qué actividades están subidas pero sin calificar: una subida sin nota se ve igual que una no entregada (ambas muestran `-`). Por eso, después de migrar, marca manualmente las que correspondan usando sus **códigos completos**.
+
+Con el servidor encendido:
+
+```powershell
+$body = @{
+  codigos = @("GA5-220501095-AA1-EV04", "GA5-220501095-AA1-EV05")
+  estado  = "Subido"
+} | ConvertTo-Json
+Invoke-RestMethod -Method Post http://127.0.0.1:8001/api/actividades/lote `
+  -ContentType "application/json" -Body $body
+```
+
+O sin servidor, con el script:
+
+```powershell
+python marcar_lote.py subido --codigos "GA5-220501095-AA1-EV04,GA5-220501095-AA1-EV05"
+```
+
+> Solo acepta **códigos completos** (`GA#-...-AA#-EV#`). Si un código no tiene ese formato, el sistema te pedirá revisarlo y marcarlo **de forma manual** con el endpoint individual.
+
+👉 Detalle y reglas en la [**Guía de uso**](guia-api.md#-marcar-en-lote-por-código-recomendado).
+
+---
+
 ## ✅ Siguiente paso
 
 Ya tienes los datos cargados. Ahora [**levanta el servidor**](configuracion.md#-ejecutar-el-servidor) y consulta la [**Guía de uso**](guia-api.md).

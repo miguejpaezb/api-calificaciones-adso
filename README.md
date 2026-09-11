@@ -83,6 +83,7 @@ CALIFICACIONES/
 │   ├── data/                 # 💾 Bases de datos (se ignora en Git)
 │   ├── migrar.py             # Script de migración HTML → SQLite
 │   ├── eliminar_rango.py     # Marca un rango de ids como Eliminada
+│   ├── marcar_lote.py        # Marca por código en lote (Subido/Eliminada)
 │   └── requirements.txt      # Dependencias
 ├── docs/                     # 📚 Documentación detallada
 ├── README.md                 # Este archivo
@@ -105,6 +106,7 @@ CALIFICACIONES/
 | `POST` | `/api/actividades/{id}/subir` | Marca una actividad como subida |
 | `POST` | `/api/actividades/{id}/calificar` | Califica (A / D / -) |
 | `POST` | `/api/actividades/{id}/eliminar` | Marca una actividad como eliminada |
+| `POST` | `/api/actividades/lote` | Marca varias como `Subido`/`Eliminada` por código |
 
 👉 Detalle, ejemplos y resultados esperados en la [**Guía de uso**](docs/guia-api.md).
 

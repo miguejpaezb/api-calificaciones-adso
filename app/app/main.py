@@ -4,7 +4,16 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from .db import get_all_rows, get_actividad, update_estado, update_calificacion, buscar_actividades
+from .db import (
+    get_all_rows,
+    get_actividad,
+    update_estado,
+    update_calificacion,
+    buscar_actividades,
+    validar_codigos,
+    marcar_por_codigos,
+    hacer_backup,
+)
 from . import services
 
 app = FastAPI(
@@ -26,6 +35,12 @@ class CalificarRequest(BaseModel):
     retroalimentacion: str | None = None
 
 
+class LoteEstadoRequest(BaseModel):
+    codigos: list[str]
+    estado: Literal["Subido", "Eliminada"]
+    backup: bool = True
+
+
 def rows():
     return get_all_rows()
 
@@ -35,6 +50,42 @@ def require_actividad(activity_id):
     if not actividad:
         raise HTTPException(status_code=404, detail=f"Actividad con id {activity_id} no encontrada")
     return actividad
+
+
+@app.post("/api/actividades/lote")
+def marcar_lote(body: LoteEstadoRequest):
+    validos, invalidos = validar_codigos(body.codigos)
+    if invalidos:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Revisa estos códigos, no tienen el formato completo "
+                "(ej. GA5-220501095-AA1-EV04): "
+                f"{invalidos}. Corrígelos o márcalos de forma manual con "
+                "POST /api/actividades/{id}/subir o /eliminar."
+            ),
+        )
+    if not validos:
+        raise HTTPException(status_code=422, detail="Debes enviar al menos un código completo")
+
+    backup_path = hacer_backup() if body.backup else None
+
+    detalle, no_encontradas, ambiguas = marcar_por_codigos(validos, body.estado)
+
+    resultado = {
+        "estado": body.estado,
+        "actualizadas": len(detalle),
+        "detalle": detalle,
+        "no_encontradas": no_encontradas,
+        "ambiguas": ambiguas,
+        "backup": str(backup_path) if backup_path else None,
+    }
+    if no_encontradas or ambiguas:
+        resultado["mensaje"] = (
+            "Revisa los códigos en 'no_encontradas' y 'ambiguas'; "
+            "esos deben hacerse de forma manual con POST /api/actividades/{id}/subir o /eliminar."
+        )
+    return resultado
 
 
 @app.post("/api/actividades/{activity_id}/subir")
@@ -86,6 +137,7 @@ def root():
             "POST /api/actividades/{id}/subir",
             "POST /api/actividades/{id}/calificar  (body: calificacion, retroalimentacion opcional)",
             "POST /api/actividades/{id}/eliminar",
+            "POST /api/actividades/lote  (body: codigos, estado, backup)",
             "/api/resumen",
         ],
     }
