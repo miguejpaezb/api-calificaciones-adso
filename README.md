@@ -20,7 +20,7 @@
 - 📥 **Migra** el reporte de calificaciones de Zajuna (HTML) a una base de datos SQLite.
 - 📊 **Calcula** porcentaje de entregas, aprobación, faltantes y totales del curso.
 - 🔎 **Busca** actividades por nombre o por fase.
-- ✍️ **Actualiza** actividades: subir, calificar (A / D / -) o marcar como eliminada.
+- ✍️ **Actualiza** actividades: subir, calificar (A / D / -), marcar como eliminada o **editar cualquier campo** (fase, tipo, actividad, calificación, retroalimentación y estado).
 - 🗑️ **Marca rangos completos** de actividades como eliminadas en un solo comando.
 
 > La base de datos se guarda en `app/data/calificaciones.db`. **No se sube a GitHub**: cada compañero la genera ejecutando la migración.
@@ -105,6 +105,7 @@ CALIFICACIONES/
 | `POST` | `/api/actividades/{id}/subir` | Marca una actividad como subida |
 | `POST` | `/api/actividades/{id}/calificar` | Califica (A / D / -) |
 | `POST` | `/api/actividades/{id}/eliminar` | Marca una actividad como eliminada |
+| `PATCH` | `/api/actividades/{id}` | Edita uno o varios campos de una actividad |
 | `POST` | `/api/actividades/lote` | Marca varias como `Subido`/`Eliminada` por código |
 
 👉 Detalle, ejemplos y resultados esperados en la [**Guía de uso**](docs/guia-api.md).

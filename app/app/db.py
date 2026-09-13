@@ -64,6 +64,30 @@ def update_calificacion(activity_id, calificacion, retroalimentacion):
         conn.close()
 
 
+COLUMNAS_EDITABLES = ("fase", "tipo", "actividad", "calificacion", "retroalimentacion", "estado")
+
+
+def update_actividad(activity_id, campos):
+    """Actualiza solo los campos recibidos (excluyendo el id) de una actividad.
+
+    `campos` es un diccionario {columna: valor}. Las columnas no permitidas se ignoran.
+    """
+    cambios = {col: valor for col, valor in campos.items() if col in COLUMNAS_EDITABLES}
+    if not cambios:
+        return 0
+    asignaciones = ", ".join(f"{col} = ?" for col in cambios)
+    valores = list(cambios.values()) + [activity_id]
+    conn = get_connection()
+    try:
+        cur = conn.execute(
+            f"UPDATE calificaciones SET {asignaciones} WHERE id = ?", valores
+        )
+        conn.commit()
+        return cur.rowcount
+    finally:
+        conn.close()
+
+
 def buscar_actividades(nombre=None, fase=None):
     conn = get_connection()
     try:

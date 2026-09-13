@@ -253,6 +253,47 @@ Invoke-RestMethod -Method Post http://127.0.0.1:8001/api/actividades/45/eliminar
 
 ---
 
+### `PATCH /api/actividades/{id}`
+
+Edita **uno o varios** campos de una actividad. Solo se actualizan los campos que envíes; el `id` nunca se puede cambiar. Campos permitidos: `fase`, `tipo`, `actividad`, `calificacion` (`A` / `D` / `-`), `retroalimentacion` y `estado` (`Subido`, `Calificado`, `No Entregado`, `Eliminada`).
+
+**Consola:**
+
+```powershell
+$body = @{ actividad = "Nuevo nombre"; estado = "Subido"; calificacion = "A" } | ConvertTo-Json
+Invoke-RestMethod -Method Patch http://127.0.0.1:8001/api/actividades/43 `
+  -ContentType "application/json" -Body $body
+```
+
+**Postman:** método **PATCH**, URL `http://127.0.0.1:8001/api/actividades/43`, pestaña **Body → raw → JSON**:
+
+```json
+{
+  "actividad": "Nuevo nombre",
+  "estado": "Subido",
+  "calificacion": "A"
+}
+```
+
+**Resultado esperado:**
+
+```json
+{
+  "id": 43,
+  "actualizado": {"actividad": "Nuevo nombre", "estado": "Subido", "calificacion": "A"},
+  "actividad": {"id": 43, "fase": "...", "tipo": "...", "actividad": "Nuevo nombre", "calificacion": "A", "retroalimentacion": null, "estado": "Subido"}
+}
+```
+
+**Reglas:**
+
+- ✅ Puedes enviar **un solo campo** o todos los que quieras; los omitidos se dejan igual.
+- ❌ Si no envías ningún campo responde **422**: `{"detail": "Debes enviar al menos un campo para actualizar"}`.
+- ❌ Si `actividad` queda vacía responde **422**: `{"detail": "El campo 'actividad' no puede quedar vacío"}`.
+- ❌ Un `calificacion` o `estado` fuera de los permitidos responde **422**.
+
+---
+
 ## 📦 Marcar en lote por código (recomendado)
 
 Marca varias actividades de una sola vez pasando sus **códigos completos** (formato `GA5-220501095-AA1-EV04`). Solo permite `Subido` o `Eliminada`; las calificadas van una por una porque llevan nota y retroalimentación.

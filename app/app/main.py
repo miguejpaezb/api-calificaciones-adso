@@ -9,6 +9,7 @@ from .db import (
     get_actividad,
     update_estado,
     update_calificacion,
+    update_actividad,
     buscar_actividades,
     validar_codigos,
     marcar_por_codigos,
@@ -39,6 +40,15 @@ class LoteEstadoRequest(BaseModel):
     codigos: list[str]
     estado: Literal["Subido", "Eliminada"]
     backup: bool = True
+
+
+class EditarActividadRequest(BaseModel):
+    fase: str | None = None
+    tipo: str | None = None
+    actividad: str | None = None
+    calificacion: Literal["A", "D", "-"] | None = None
+    retroalimentacion: str | None = None
+    estado: Literal["Subido", "Calificado", "No Entregado", "Eliminada"] | None = None
 
 
 def rows():
@@ -109,6 +119,18 @@ def marcar_eliminada(activity_id: int):
     return {"id": activity_id, "estado": "Eliminada"}
 
 
+@app.patch("/api/actividades/{activity_id}")
+def editar_actividad(activity_id: int, body: EditarActividadRequest):
+    require_actividad(activity_id)
+    cambios = body.model_dump(exclude_unset=True)
+    if not cambios:
+        raise HTTPException(status_code=422, detail="Debes enviar al menos un campo para actualizar")
+    if "actividad" in cambios and not (cambios["actividad"] or "").strip():
+        raise HTTPException(status_code=422, detail="El campo 'actividad' no puede quedar vacío")
+    update_actividad(activity_id, cambios)
+    return {"id": activity_id, "actualizado": cambios, "actividad": get_actividad(activity_id)}
+
+
 @app.get("/api/buscar")
 def buscar(
     nombre: str | None = Query(None, description="Nombre de la actividad a buscar"),
@@ -137,6 +159,7 @@ def root():
             "POST /api/actividades/{id}/subir",
             "POST /api/actividades/{id}/calificar  (body: calificacion, retroalimentacion opcional)",
             "POST /api/actividades/{id}/eliminar",
+            "PATCH /api/actividades/{id}  (body: fase, tipo, actividad, calificacion, retroalimentacion, estado)",
             "POST /api/actividades/lote  (body: codigos, estado, backup)",
             "/api/resumen",
         ],
